@@ -44,16 +44,15 @@ UpdateHashtag = function (req, res) {
 
 /** Display Hashtag */
 GetHashTag = function (req, res) {
-  const userGetHashtag = {
-    email: req.params.email
-  }
-  userService.GetHashTag(userGetHashtag).then((response) => {
+  const { email } = req.params;
+  userService.GetHashTag(email).then((response) => {
     return res.status(200).json({ status: 1, message: response.message, data: response.data });
   }).catch((error) => {
     console.log('error:', error);
     return res.status(error.status ? error.status : 500).json({ message: error.message ? error.message : 'internal server error' });
   });
 }
+
 
 module.exports = {
   AddTag: AddTag,

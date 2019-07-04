@@ -1,3 +1,4 @@
+/** Twitter Callback URL */
 module.exports = {
-    DB: 'http://132.140.160.63:4000/'
+    DB: 'http://192.168.1.53:4000/'
 }

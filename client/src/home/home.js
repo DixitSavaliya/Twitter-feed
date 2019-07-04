@@ -122,9 +122,8 @@ class Home extends React.Component {
     /** First Call During App Run */
     componentDidMount() {
         if (this.state.isAuthenticated == true) {
-            const tweet = [];
             API.getTwitterTrends().
-                then((findresponse, err) => {
+                then((findresponse) => {
                     try {
                         this.state.isFetching = false;
                         this.setState(prevState => ({
@@ -132,9 +131,12 @@ class Home extends React.Component {
                             isLoaded: true
                         }))
                     } catch (err) {
-                        console.log("err====", err);
+                        console.log(err);
                     }
-                });
+                })
+                .catch((err) => {
+                    console.log({ status: 500, message: 'Internal Server Error', err });
+                })
 
             API.getTwitterTweets().
                 then((findresponse, err) => {
@@ -148,8 +150,11 @@ class Home extends React.Component {
                             }))
                         }
                     } catch (err) {
-                        console.log("err=======", err);
+                        console.log(err);
                     }
+                })
+                .catch((err) => {
+                    console.log({ status: 500, message: 'Internal Server Error', err });
                 })
             this.getHash();
         }
@@ -200,6 +205,7 @@ class Home extends React.Component {
         localStorage.removeItem("name");
         localStorage.removeItem("username");
         localStorage.removeItem('photo');
+        localStorage.removeItem('token');
         history.push('/');
         this.setState({ isLoaded: true, fireRedirect: true })
     }
@@ -239,8 +245,11 @@ class Home extends React.Component {
                         this.state.isSearchTweetDisplay = true;
                     }
                 } catch (err) {
-                    console.log("err======", err);
+                    console.log(err);
                 }
+            })
+            .catch((err) => {
+                console.log({ status: 500, message: 'Internal Server Error', err });
             })
     }
 
@@ -260,8 +269,11 @@ class Home extends React.Component {
                     this.getHash();
                 }
                 catch (err) {
-                    console.log("err======", err);
+                    console.log(err);
                 }
+            })
+            .catch((err) => {
+                console.log({ status: 500, message: 'Internal Server Error', err });
             })
     }
 
@@ -274,13 +286,16 @@ class Home extends React.Component {
                         hashtag: res.data.data[0].hashtag
                     })
                 } catch (err) {
-                    console.log("err========", err);
+                    console.log(err);
                 }
+            })
+            .catch((err) => {
+                console.log({ status: 500, message: 'Internal Server Error', err });
             })
     }
 
     /**
-     * @param {*} id
+     * @param {string} id
      * Delete Hashtag In Our App
      */
     deletehash(id) {
@@ -293,8 +308,11 @@ class Home extends React.Component {
                     Swal.fire("Successfully deleted!", "", "success");
                     this.componentDidMount();
                 } catch (err) {
-                    console.log("errr========", err);
+                    console.log(err);
                 }
+            })
+            .catch((err) => {
+                console.log({ status: 500, message: 'Internal Server Error', err });
             })
     }
 
@@ -311,7 +329,7 @@ class Home extends React.Component {
     }
 
     /** 
-     * @param {*} id
+     * @param {string} id
      * ModelOpen During Hashtag Add 
      */
     handleClickOpenHash(id) {
@@ -337,7 +355,7 @@ class Home extends React.Component {
     }
 
     /**
-     * @param {*} id
+     * @param {string} id
      * Update Hashtag In Our App 
      */
     updatehash(id) {
@@ -354,8 +372,11 @@ class Home extends React.Component {
                     })
                     this.componentDidMount();
                 } catch (err) {
-                    console.log("err=======", err);
+                    console.log(err);
                 }
+            })
+            .catch((err) => {
+                console.log({ status: 500, message: 'Internal Server Error', err });
             })
     }
 
@@ -394,7 +415,7 @@ class Home extends React.Component {
 
             /** Popular Twitter-Tweets Display In Our App */
             if (!isFetching && !this.state.displaysearchtweets.length && this.state.tweet[0]) displaydate = this.state.tweet[0].slice(0, this.state.visible).map(tweet =>
-                <div>
+                <div key={tweet}>
                     <div key={tweet}>
                         <div className="tweet_class1">
                             <Grid container spacing={1}>
@@ -410,10 +431,11 @@ class Home extends React.Component {
                                     </a>
                                     <p><span>{tweet.text}</span></p>
                                     <div className="hashtag_flex">{tweet && tweet.entities ? (tweet.entities.hashtags.map(hashtag =>
-                                        <p key={hashtag} className="hash_color" onClick={(e) => this.handleClick(event)}>#{hashtag.text}</p>)) : ('')}</div>
-                                    <div className="video">
-                                        {tweet.extended_entities ? (<Player className="video_height" src={tweet.extended_entities.media[0].video_info.variants[0].url}></Player>) : ('')}
-                                    </div>
+                                        <p className="hash_color" onClick={(e) => this.handleClick(event)}>#{hashtag.text}</p>)) : ('')}</div>
+                                    {(tweet.extended_entities) ?
+                                        (<div className="video">
+                                            {tweet.extended_entities ? (<Player className="video_height" src={tweet.extended_entities.media[0].video_info.variants[0].url}></Player>) : ('')}
+                                        </div>) : ('')}
                                 </Grid>
                             </Grid>
                         </div>
@@ -460,6 +482,8 @@ class Home extends React.Component {
                             <Tooltip disableFocusListener title="Delete"><i className="fas fa-trash" onClick={this.deletehash.bind(this, text)} ></i></Tooltip>
                             <Tooltip disableFocusListener title="Edit"><i className="fas fa-pencil-alt" onClick={this.handleClickOpenHash.bind(this, text)}></i></Tooltip>
                             <div>
+
+                                {/** Edit hashtag model */}
                                 <Dialog
                                     fullScreen={this.fullScreen}
                                     open={this.state.openModel}
@@ -510,6 +534,8 @@ class Home extends React.Component {
                 return (
                     <div className={classes.root}>
                         <CssBaseline />
+
+                        {/** App-Bar Code */}
                         <AppBar position="fixed" className={classes.appBar}>
                             <Toolbar>
                                 <IconButton
@@ -544,6 +570,8 @@ class Home extends React.Component {
                                 </Tooltip>
                             </Toolbar>
                         </AppBar>
+
+                        {/** Drawer Code */}
                         <nav className={classes.drawer}>
                             <Hidden smUp implementation="css">
                                 <Drawer
@@ -609,6 +637,8 @@ class Home extends React.Component {
                         </nav>
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
+
+                            {/** User Profile */}
                             <div className="profile_main_class">
                                 <Grid container space={12}>
                                     <Grid item sm={1}>
@@ -626,6 +656,8 @@ class Home extends React.Component {
                                     </Grid>
                                 </Grid>
                             </div>
+
+                            {/** Popular Twitter-Tweets */}
                             <div className="main_class_post">
                                 <div className="tweet_bg_color">
                                     {displaydate}
@@ -634,6 +666,8 @@ class Home extends React.Component {
                                     <button onClick={this.loadMore} type="button" className="load-more">Load more</button>
                                 }  </div> : <div>No data</div>}
                             </div>
+
+                            {/** Add Hashtag Button */}
                             <div className="add_tweet">
                                 <Tooltip disableFocusListener title="Add-Hashtag">
                                     <Fab color="primary" aria-label="Add" onClick={this.handleClickOpen} className={classes.margin}>
@@ -641,6 +675,8 @@ class Home extends React.Component {
                                     </Fab>
                                 </Tooltip>
                             </div>
+
+                            {/** Add Hashtag Model Open */}
                             <Dialog
                                 fullScreen={this.fullScreen}
                                 open={this.state.open}
@@ -674,6 +710,8 @@ class Home extends React.Component {
                                     </Tooltip>
                                 </DialogActions>
                             </Dialog>
+
+                            {/** Search Tweets */}
                             <div>
                                 <div className="search_modals">
                                     {displaysearchtweetsview}
@@ -690,7 +728,6 @@ class Home extends React.Component {
 }
 Home.propTypes = {
     container: PropTypes.object,
-
 };
 
 export default withStyles(classes)(Home);
